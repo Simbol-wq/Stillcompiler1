@@ -1,0 +1,36 @@
+name: Build SteelCompiler
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Compile SteelCompiler
+        run: |
+          mkdir -p out
+          find src/main/java -name "*.java" > sources.txt
+          javac -d out @sources.txt
+
+      - name: Package runnable jar
+        run: |
+          jar --create --file SteelCompiler.jar --main-class com.steelcompiler.Main -C out .
+
+      - name: Upload SteelCompiler.jar as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SteelCompiler-jar
+          path: SteelCompiler.jar
+          retention-days: 30
